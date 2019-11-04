@@ -81,13 +81,15 @@ Edit proxy configurations:
 $ vi src/index.ts
 ```
 
-5. Deploy
+Deploy
 
 ```bash
 $ npm run cdk -- deploy
 $ # OR
 $ env AWS_PROFILE=myprofile AWS_REGION=us-east-1 npm run cdk -- deploy
 ```
+
+Done! 🎉
 
 ### Example
 
@@ -134,7 +136,7 @@ See: https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-test-me
 
 In this case, You should configure IAM Role for logging.
 
-Follow below two steps in Guide
+Follow below two steps in [this document](https://aws.amazon.com/premiumsupport/knowledge-center/api-gateway-cloudwatch-logs/):
 
 - "Create an IAM role for logging to CloudWatch" section
 - "Add the IAM role in the API Gateway console"
