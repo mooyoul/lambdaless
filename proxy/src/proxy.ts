@@ -13,7 +13,7 @@ export class Proxy extends cdk.Construct {
   constructor(scope: cdk.Construct, id: string, props: ProxyProps) {
     super(scope, id);
 
-    // API Gateway for shorten url creation
+    // API Gateway for Proxy Endpoint
     this.api = new apigw.RestApi(this, "API", {
       restApiName: props.apiName,
       endpointTypes: [props.endpointType],
