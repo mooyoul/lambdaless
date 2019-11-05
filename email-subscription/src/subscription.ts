@@ -15,7 +15,7 @@ export interface SubscriptionServiceProps {
 export class SubscriptionService extends cdk.Construct {
   public readonly api: apigw.RestApi;
   public readonly table: ddb.Table;
-  public readonly exeutionRole: iam.Role;
+  public readonly executionRole: iam.Role;
 
   constructor(scope: cdk.Construct, id: string, props: SubscriptionServiceProps) {
     super(scope, id);
@@ -41,7 +41,7 @@ export class SubscriptionService extends cdk.Construct {
     });
 
     // IAM Role for accessing upper DynamoDB Table from API Gateway side
-    this.exeutionRole = new iam.Role(this, "APIExecutionRole", {
+    this.executionRole = new iam.Role(this, "APIExecutionRole", {
       assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
       inlinePolicies: {
         "allow-ddb-access": new iam.PolicyDocument({
@@ -88,7 +88,7 @@ export class SubscriptionService extends cdk.Construct {
       integrationHttpMethod: "POST",
       action: "PutItem",
       options: {
-        credentialsRole: this.exeutionRole,
+        credentialsRole: this.executionRole,
         passthroughBehavior: apigw.PassthroughBehavior.NEVER,
         requestTemplates: {
           "application/json": stripIndent`
