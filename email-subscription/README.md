@@ -1,43 +1,77 @@
-# Lambdaless Proxy
+# Lambdaless Email Subscription Service
 
-A HTTP Proxy implemented without Lambda usage
+A simple email subscription service that implemented without Lambda usage  
 
 ### Why?
 
-You may need to proxy requests, due to following reasons:
+You may need to create "Email Subscribe" feature, especially your product is in early stage. You'll build an promotion website.
 
-- Blocked Access (e.g. Blocked Source IP, Blocked Source CIDR ...)
-- Accelerate server access (e.g. Make open graph crawler to faster)
-- Secure insecure resources (e.g. Prevent [Mixed Content](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content?hl=en) issue) 
+Usually, we have to build API to register email subscriptions. Like this:
+
+![Example](./assets/example.png)
  
- 
-![Example](./assets/blocked.png) 
-
-At [Vingle](https://www.vingle.net), We have to proxy certain open graph scrap requests to bypass geo restrictions of some websites.
-
-Previously, We had simple lambda function that proxies requests. 
+Previously, We had simple lambda function that stores email subscription. 
 
 For example: 
 
 ```typescript
-import axios from "axios";
+import { Decorator, Query, Table } from "dynamo-types";
+import * as Joi from "joi";
+
+const RequestModelSchema = Joi.object({
+  email: Joi.string().email().required(),
+}).required();
+
+@Decorator.Table({ name: "my_promotion_subscriptions" })
+class Subscription extends Table {
+  @Decorator.HashPrimaryKey("email")
+  public static readonly primaryKey: Query.HashPrimaryKey<Subscription, string>;
+                                                                    
+  @Decorator.Writer()    
+  public static readonly writer: Query.Writer<Subscription>;
+
+  // Query Helpers
+  public static create(email: string) {
+    const model = new this();
+    model.email = email;
+    model.createdAt = Date.now();
+
+    return model;
+  }
+
+  @Decorator.Attribute({ name: "e" })                              
+  public email: string;
+                                                                    
+  @Decorator.Attribute({ name: "ca" })
+  public createdAt: number;
+}
 
 export async function handler(event: Event) {
-  const { url } = event.body;
- 
-  const response = await axios({
-    method: "GET",
-    url,
-    headers: {
-      "User-Agent": "facebookexternalhit/1.1"
-    },
-    timeout: 15,
-  });
+  // Validate Request
+  const { error, value } = RequestModelSchema.validate(event.body);
 
+  if (error) {
+    return {
+      statusCode: 422,
+      headers: {
+        "Content-Type": "application/json",      
+      },
+      body: JSON.stringify({
+        error: { code: "INVALID_PARAMETER", message: error.message },
+      }),
+    }; 
+  }
+  
+  // Store subscription data
+  const subscription = Subscription.create(value.email);
+  await subscription.save();
+ 
   return { 
-    statusCode: response.status,
-    headers: response.headers,
-    body: res.data,
+    statusCode: 200,
+    headers: {
+        "Content-Type": "application/json",      
+    },
+    body: JSON.stringify({ data: { ok: true } }),
   };
 }
 ```
@@ -45,15 +79,14 @@ export async function handler(event: Event) {
 It worked pretty good, but Lambda based proxy has some downsides:
 
 - We have to monitor Lambda invocations, latencies, failures ...
-- We have to pay for Lambda Cost - Most time of lambda invocation just waits for response from upstream
-- We have to maintenance Lambda function and dependencies - Node.js Lambda runtime reaches EOL, New version of axios is released ...   
+- We have to pay for Lambda Cost - Lambda just do simple tasks (Validate request, Write DynamoDB item...)
+- We have to maintenance Lambda function and dependencies - Node.js Lambda runtime reaches EOL, New version of AWS SDK is released ...   
 
 So we decided to remove Lambda usage in this use-case, and We could make this better!
 
 ### How?
 
-Just use HTTP_PROXY integration with pass-through option and abstract proxy endpoints by using AWS CDK. 
-
+Just use AWS Service integration with API Gateway built-ins (Request Validation, Request Template...) 
 
 ### Getting Started
 
@@ -75,10 +108,10 @@ Install required dependencies:
 $ npm ci
 ``` 
 
-Edit proxy configurations:
+Edit service configurations:
 
 ```bash
-$ vi src/index.ts
+$ vi src/stack.ts
 ```
 
 Deploy
@@ -94,22 +127,14 @@ Done! 🎉
 ### Example
 
 ```typescript
-const proxy = new Proxy(this, "Proxy", {
-  apiName: "lambdaless-proxy",
-  endpointType: EndpointType.EDGE,
+const service = new SubscriptionService(this, "Service", {
+    apiName: "lambdaless-subscription",
+    endpointType: EndpointType.EDGE,
+    tableName: "lambdaless-subscriptions",
 });
-
-proxy.addProxy("ipify", "https://api.ipify.org", "GET");
 ```
 
-This will create one resource that proxies `/ipify` path to `https://api.ipify.org
-
-Example matches:
-
-| Endpoint | Mapped to |
-| -------- | --------- |
-| https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify | https://api.ipify.org/ |
-| https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify/foo/bar?baz | https://api.ipify.org/foo/bar?baz |
+This will create one resource that stores given email address to DynamoDB Table. 
 
 
 ### Testing
@@ -143,20 +168,3 @@ Follow below two steps in [this document](https://aws.amazon.com/premiumsupport/
 
 > NOTE: "Enable logging for your API and stage" section is not required.
 
-
-### Challenges / Wishlists
-
-##### "Dynamic" forward proxy
-
-It would be nice if we can implement forward proxy
-
-For example, 
-
-- https://API_ID.execute-api.REGION.amazonaws.com/prod/https://www.example.com/foo/bar/baz
-
-will proxy requests to
-
-- https://www.example.com/foo/bar/baz
-
-I haven't tried this so let me know it can be implemented in Lambdaless, 
-or you can try my alternative project: [proxyfront](https://github.com/mooyoul/proxyfront) - Another approach to implement forward proxy using Lambda@Edge.
