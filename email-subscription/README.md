@@ -134,7 +134,7 @@ const service = new SubscriptionService(this, "Service", {
 });
 ```
 
-This will create one resource that stores given email address to DynamoDB Table. 
+This will create an API that stores given email address to DynamoDB Table. 
 
 
 ### Testing
