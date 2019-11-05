@@ -76,7 +76,7 @@ export async function handler(event: Event) {
 }
 ```
 
-It worked pretty good, but Lambda based proxy has some downsides:
+It worked pretty good, but Lambda based API implementation has some downsides:
 
 - We have to monitor Lambda invocations, latencies, failures ...
 - We have to pay for Lambda Cost - Lambda just do simple tasks (Validate request, Write DynamoDB item...)
@@ -96,10 +96,10 @@ Clone lambdaless repository:
 $ git clone https://github.com/mooyoul/lambdaless.git
 ```
 
-Navigate to `proxy` directory:
+Navigate to `email-subscription` directory:
 
 ```bash
-$ cd lambdaless/proxy
+$ cd lambdaless/email-subscription
 ```
 
 Install required dependencies:
