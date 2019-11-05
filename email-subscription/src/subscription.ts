@@ -29,15 +29,18 @@ export class SubscriptionService extends cdk.Construct {
       },
     });
 
+    // DynamoDB Table for saving subscriptions
     this.table = new ddb.Table(this, "Table", {
       tableName: props.tableName,
       partitionKey: {
         name: "email",
         type: ddb.AttributeType.STRING,
       },
+      // Enable "Serverless Mode"
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
     });
 
+    // IAM Role for accessing upper DynamoDB Table from API Gateway side
     this.exeutionRole = new iam.Role(this, "APIExecutionRole", {
       assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
       inlinePolicies: {
@@ -51,6 +54,7 @@ export class SubscriptionService extends cdk.Construct {
       }
     });
 
+    // A JSONSchema model to validate request payload
     const requestModel = this.api.addModel("SubscriptionRequestModel", {
       contentType: "application/json",
       modelName: "SubscriptionRequest",
@@ -69,13 +73,16 @@ export class SubscriptionService extends cdk.Construct {
       },
     });
 
+    // RequestValidator to validate requests
     const validator = new apigw.RequestValidator(this, "RequestValidator", {
       restApi: this.api,
       validateRequestBody: true,
     });
 
+    // Create `/subscriptions` Resource
     const subscriptionResource = this.api.root.addResource("subscriptions");
 
+    // Add AWS Integration
     subscriptionResource.addMethod("POST", new apigw.AwsIntegration({
       service: "dynamodb",
       integrationHttpMethod: "POST",
