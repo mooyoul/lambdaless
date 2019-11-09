@@ -1,0 +1,35 @@
+{
+  "name": "@lambdaless/example",
+  "version": "1.0.0",
+  "description": "Lambdaless Example",
+  "scripts": {
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "cdk": "cdk"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mooyoul/lambdaless.git"
+  },
+  "author": "MooYeol Prescott Lee <mooyoul@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mooyoul/lambdaless/issues"
+  },
+  "homepage": "https://github.com/mooyoul/lambdaless/blob/email-subscription/README.md#readme",
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.15.0",
+    "@aws-cdk/aws-dynamodb": "^1.15.0",
+    "@aws-cdk/aws-iam": "^1.15.0",
+    "@aws-cdk/aws-kinesisfirehose": "^1.15.0",
+    "@aws-cdk/aws-s3": "^1.15.0",
+    "@aws-cdk/core": "^1.15.0",
+    "aws-cdk": "^1.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "8.10.58",
+    "@vingle/tslint-preset": "1.0.0",
+    "ts-node": "8.4.1",
+    "tslint": "5.20.0",
+    "typescript": "3.6.4"
+  }
+}
