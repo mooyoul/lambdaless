@@ -16,7 +16,7 @@ Their abstraction is super cool. also it finally stopped CloudFormation YAML nig
 
 Use API Gateway as first citizen in Serverless Architecture.
 
-For further details, Please refer to my presentation: [Lambdaless and AWS CDK @ AWSKRUG Serverless Group](https://slideshare.net)
+For further details, Please refer to my presentation: [Lambdaless and AWS CDK @ AWSKRUG Serverless Group](https://www.slideshare.net/mooyoul/lambdaless-and-aws-cdk-191793017)
 
 
 ### Do and Don'ts
