@@ -6,7 +6,10 @@ A Serverless architecture without Lambda usage ⚡️
 
 Lambdaless is another way to implement service APIs. Simply think this as Serverless architecture without Lambda usage.
 
-I'm not joking. This repository contains some real-world Lambdaless implementations.  
+I'm not joking. This repository contains some real-world Lambdaless implementations.
+
+A big thanks to AWS CDK. AWS CDK provided an easy way to implement Lambdaless. 
+Their abstraction is super cool. also it finally stopped CloudFormation YAML nightmare.
 
 
 ### How?
@@ -35,6 +38,7 @@ For further details, Please refer to my presentation: [Lambdaless and AWS CDK @ 
 
 - [Comment Service](./comment)
 - [Email Subscription Service](./email-subscription)
+- idea: URL Shortener Service
 
 #### Proxies
 
@@ -43,7 +47,7 @@ For further details, Please refer to my presentation: [Lambdaless and AWS CDK @ 
 #### Collectors
 
 - [Sendgrid Event Collector](./sendgrid-event-collector)
-
+- idea: [Slack Event](https://api.slack.com/events-api) Collector
 
 ## License
 
