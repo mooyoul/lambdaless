@@ -41,3 +41,11 @@ jspm_packages
 # IDE Configurations
 .vscode
 .idea
+
+# Compiled files
+index.js
+index.js.map
+index.d.ts
+
+# CDK States
+cdk.out
