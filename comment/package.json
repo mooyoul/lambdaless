@@ -1,0 +1,41 @@
+{
+  "name": "@lambdaless/comment",
+  "version": "1.0.0",
+  "description": "Lambdaless Comment Service",
+  "main": "lib/index.js",
+  "private": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "index.js.map"
+  ],
+  "scripts": {
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "build": "tsc",
+    "clean": "rm -f index.js index.d.ts index.js.map",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mooyoul/lambdaless.git"
+  },
+  "author": "MooYeol Prescott Lee <mooyoul@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mooyoul/lambdaless/issues"
+  },
+  "homepage": "https://github.com/mooyoul/lambdaless/blob/comments/README.md#readme",
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.15.0",
+    "@aws-cdk/aws-dynamodb": "^1.15.0",
+    "@aws-cdk/aws-iam": "^1.15.0",
+    "@aws-cdk/core": "^1.15.0",
+    "common-tags": "^1.8.0"
+  },
+  "devDependencies": {
+    "@types/common-tags": "1.8.0",
+    "@vingle/tslint-preset": "1.0.0",
+    "tslint": "5.20.0",
+    "typescript": "3.6.4"
+  }
+}
