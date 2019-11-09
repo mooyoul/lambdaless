@@ -1,6 +1,6 @@
-# Lambdaless Proxy
+# @lambdaless/proxy
 
-A HTTP Proxy implemented without Lambda usage
+An AWS CDK construct of Lambdaless HTTP Proxy.
 
 ### Why?
 
@@ -57,59 +57,93 @@ Just use HTTP_PROXY integration with pass-through option and abstract proxy endp
 
 ### Getting Started
 
-Clone lambdaless repository:
+Install `@lambdaless/email-subscription` construct package from NPM:
 
 ```bash
-$ git clone https://github.com/mooyoul/lambdaless.git
+$ npm i @lambdaless/email-subscription --save
 ```
 
-Navigate to `proxy` directory:
+Add construct to your AWS CDK based Stack:
 
-```bash
-$ cd lambdaless/proxy
+```typescript
+
+import * as cdk from "@aws-cdk/core";
+
+import * as apigw from "@aws-cdk/aws-apigateway";
+import { Proxy } from "@lambdaless/proxy";
+
+export class MyStack extends cdk.Stack {
+  public constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Create or reference pre-existing API Gateway RestAPI
+    const api = new apigw.RestApi(this, "API", {
+      restApiName: "my-awesome-apigw",
+      endpointTypes: [apigw.EndpointType.EDGE],
+      deployOptions: {
+        loggingLevel: apigw.MethodLoggingLevel.INFO,
+      },
+    });
+
+    // Create Proxy and Attach proxy to given API Gateway RestAPI target
+    const proxyRoot = api.root.addResource("proxy");
+    const proxy = new Proxy(this, "Proxy", {
+      method: "GET",
+      resource: proxyRoot.addResource("ipify"),
+      endpointBaseUrl: "https://api.ipify.org",
+      exact: true,
+    });
+  }
+}
 ```
 
-Install required dependencies:
+and then, Deploy your CDK App. Done! 🎉
 
-```bash
-$ npm ci
-``` 
+### API
 
-Edit proxy configurations:
+It's pass-through. Request/Response will be passed as-is. There's no modification except API Gateway's default behavior. (e.g. adding Request ID to headers) 
 
-```bash
-$ vi src/index.ts
-```
 
-Deploy
-
-```bash
-$ npm run cdk -- deploy
-$ # OR
-$ env AWS_PROFILE=myprofile AWS_REGION=us-east-1 npm run cdk -- deploy
-```
-
-Done! 🎉
-
-### Example
+#### General
 
 ```typescript
 const proxy = new Proxy(this, "Proxy", {
-  apiName: "lambdaless-proxy",
-  endpointType: EndpointType.EDGE,
-});
-
-proxy.addProxy("ipify", "https://api.ipify.org", "GET");
+  method: "GET",
+  resource: api.root.addResource("ipify"),
+  endpointBaseUrl: "https://api.ipify.org",
+  exact: true,
+})
 ```
 
-This will create one resource that proxies `/ipify` path to `https://api.ipify.org
+will result:
 
-Example matches:
+| Match? | Endpoint | Mapped to |
+| -------- | --------- | ------- |
+| Yes | https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify | https://api.ipify.org/ |
+| Yes | https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify/ | https://api.ipify.org/ |
+| Yes | https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify/foo/bar?baz | https://api.ipify.org/foo/bar?baz |
 
-| Endpoint | Mapped to |
-| -------- | --------- |
-| https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify | https://api.ipify.org/ |
-| https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify/foo/bar?baz | https://api.ipify.org/foo/bar?baz |
+
+#### Exact Match
+
+Exact Match. If you familiar with NGiNX, Think it as  `=` operator in NGiNX location directive. 
+
+```typescript
+const proxy = new Proxy(this, "Proxy", {
+  method: "GET",
+  resource: api.root.addResource("ipify"),
+  endpointBaseUrl: "https://api.ipify.org",
+  exact: true,
+})
+```
+
+will result:
+
+| Match? | Endpoint | Mapped to |
+| -------- | --------- | ------- |
+| Yes | https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify | https://api.ipify.org/ |
+| Yes | https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify/ | https://api.ipify.org/ |
+| No | https://API_ID.execute-api.REGION.amazonaws.com/prod/ipify/foo/bar?baz | `-` (No Match) |
 
 
 ### Testing
@@ -124,24 +158,6 @@ Since there are no any business logic, Testing is not necessary.
 Use API Gateway built-in API Tester. You can inspect full request/response and execution logs.
 
 See: https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-test-method.html
-
-
-### Troubleshoot
-
-##### Deploy failure with CloudWatch Logs Role message
-
-![error](./assets/failure.png)
-
-> CloudWatch Logs role ARN must be set in account settings to enable logging.
-
-In this case, You should configure IAM Role for logging.
-
-Follow below two steps in [this document](https://aws.amazon.com/premiumsupport/knowledge-center/api-gateway-cloudwatch-logs/):
-
-- "Create an IAM role for logging to CloudWatch" section
-- "Add the IAM role in the API Gateway console"
-
-> NOTE: "Enable logging for your API and stage" section is not required.
 
 
 ### Challenges / Wishlists
