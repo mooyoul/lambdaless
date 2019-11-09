@@ -57,10 +57,10 @@ Just use HTTP_PROXY integration with pass-through option and abstract proxy endp
 
 ### Getting Started
 
-Install `@lambdaless/email-subscription` construct package from NPM:
+Install `@lambdaless/proxy` construct package from NPM:
 
 ```bash
-$ npm i @lambdaless/email-subscription --save
+$ npm i @lambdaless/proxy --save
 ```
 
 Add construct to your AWS CDK based Stack:
