@@ -1,6 +1,6 @@
-# Lambdaless Email Subscription Service
+# @lambdaless/email-subscription
 
-A simple email subscription service that implemented without Lambda usage  
+An AWS CDK construct of Lambdaless Email subscription service.  
 
 ### Why?
 
@@ -90,51 +90,96 @@ Just use AWS Service integration with API Gateway built-ins (Request Validation,
 
 ### Getting Started
 
-Clone lambdaless repository:
+Install `@lambdaless/email-subscription` construct package from NPM:
 
 ```bash
-$ git clone https://github.com/mooyoul/lambdaless.git
+$ npm i @lambdaless/email-subscription --save
 ```
 
-Navigate to `email-subscription` directory:
-
-```bash
-$ cd lambdaless/email-subscription
-```
-
-Install required dependencies:
-
-```bash
-$ npm ci
-``` 
-
-Edit service configurations:
-
-```bash
-$ vi src/stack.ts
-```
-
-Deploy
-
-```bash
-$ npm run cdk -- deploy
-$ # OR
-$ env AWS_PROFILE=myprofile AWS_REGION=us-east-1 npm run cdk -- deploy
-```
-
-Done! 🎉
-
-### Example
+Add service construct to your AWS CDK based Stack:
 
 ```typescript
-const service = new SubscriptionService(this, "Service", {
-    apiName: "lambdaless-subscription",
-    endpointType: EndpointType.EDGE,
-    tableName: "lambdaless-subscriptions",
-});
+
+import * as cdk from "@aws-cdk/core";
+
+import * as apigw from "@aws-cdk/aws-apigateway";
+import { EmailSubscriptionService } from "@lambdaless/email-subscription";
+
+export class MyStack extends cdk.Stack {
+  public constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Create or reference pre-existing API Gateway RestAPI
+    const api = new apigw.RestApi(this, "API", {
+      restApiName: "my-awesome-apigw",
+      endpointTypes: [apigw.EndpointType.EDGE],
+      deployOptions: {
+        loggingLevel: apigw.MethodLoggingLevel.INFO,
+      },
+    });
+
+    // Create Email Subscription Service and Attach API to given API Gateway RestAPI target
+    const emailSubscriptionService = new EmailSubscriptionService(this, "EmailSubscriptionService", {
+      api,
+      resource: api.root.addResource("subscriptions"),
+      tableName: "lambdaless-email-subscriptions",
+    });
+  }
+}
 ```
 
-This will create an API that stores given email address to DynamoDB Table. 
+and then, Deploy your CDK App. Done! 🎉
+
+
+### API
+
+Current implementation has only one API - createSubscription.
+
+#### createSubscription
+
+POST /base_path/subscriptions
+
+Create a new email subscription.
+
+##### Request Parameters
+
+N/A
+
+##### Request Body
+
+Content-Type: application/json
+
+```json
+{
+  "title": "createSubscriptionRequestBody",
+  "type": "object",
+  "required": ["email"],
+  "properties": {
+    "email": {
+        "type": "string",
+        "format": "email"
+    }
+  }
+}
+```
+
+For example:
+
+```json
+{
+  "email": "mooyoul@example.com"
+}
+```
+
+
+##### Responses
+
+| Status | Description |
+| ------ | ----------- |
+| 200 | Successfully created a new subscription. Empty response body will be provided. |
+| 400 | Validation Error. Specified query parameter does not exists, or request body does not match to schema. |
+| 422 | Failed to create comment due to DynamoDB Error. This will be happen if given email address already exists in subscription list. |
+| 500 | API Gateway Internal Error. 
 
 
 ### Testing

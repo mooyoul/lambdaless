@@ -1,11 +1,20 @@
 {
-  "name": "lambdaless-proxy",
+  "name": "@lambdaless/email-subscription",
   "version": "1.0.0",
-  "description": "Lambdaless HTTP Proxy",
-  "main": "index.js",
+  "description": "Lambdaless Email subscription service",
+  "main": "lib/index.js",
+  "private": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "index.js.map"
+  ],
   "scripts": {
+    "clean": "rm -f index.js index.d.ts index.js.map",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "cdk": "cdk"
+    "prebuild": "npm run lint",
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -16,20 +25,17 @@
   "bugs": {
     "url": "https://github.com/mooyoul/lambdaless/issues"
   },
-  "homepage": "https://github.com/mooyoul/lambdaless/blob/proxy/README.md#readme",
+  "homepage": "https://github.com/mooyoul/lambdaless/blob/email-subscription/README.md#readme",
   "dependencies": {
     "@aws-cdk/aws-apigateway": "^1.15.0",
     "@aws-cdk/aws-dynamodb": "^1.15.0",
     "@aws-cdk/aws-iam": "^1.15.0",
     "@aws-cdk/core": "^1.15.0",
-    "aws-cdk": "^1.15.0",
     "common-tags": "^1.8.0"
   },
   "devDependencies": {
     "@types/common-tags": "1.8.0",
-    "@types/node": "8.10.58",
     "@vingle/tslint-preset": "1.0.0",
-    "ts-node": "8.4.1",
     "tslint": "5.20.0",
     "typescript": "3.6.4"
   }

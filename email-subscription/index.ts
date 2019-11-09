@@ -7,27 +7,25 @@ import * as iam from "@aws-cdk/aws-iam";
 import { stripIndent } from "common-tags";
 
 export interface SubscriptionServiceProps {
-  readonly apiName: string;
-  readonly endpointType: apigw.EndpointType;
+  readonly api: apigw.RestApi;
+  readonly resource: apigw.Resource;
   readonly tableName: string;
 }
 
-export class SubscriptionService extends cdk.Construct {
+export class EmailSubscriptionService extends cdk.Construct {
   public readonly api: apigw.RestApi;
+  public readonly resource: apigw.Resource;
   public readonly table: ddb.Table;
   public readonly executionRole: iam.Role;
 
-  constructor(scope: cdk.Construct, id: string, props: SubscriptionServiceProps) {
+  public constructor(scope: cdk.Construct, id: string, props: SubscriptionServiceProps) {
     super(scope, id);
 
     // API Gateway for Subscription API
-    this.api = new apigw.RestApi(this, "API", {
-      restApiName: props.apiName,
-      endpointTypes: [props.endpointType],
-      deployOptions: {
-        loggingLevel: apigw.MethodLoggingLevel.INFO,
-      },
-    });
+    this.api = props.api;
+
+    // API Resource for Subscription API
+    this.resource = props.resource;
 
     // DynamoDB Table for saving subscriptions
     this.table = new ddb.Table(this, "Table", {
@@ -43,6 +41,7 @@ export class SubscriptionService extends cdk.Construct {
     // IAM Role for accessing upper DynamoDB Table from API Gateway side
     this.executionRole = new iam.Role(this, "APIExecutionRole", {
       assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
+      externalIds: [cdk.Aws.ACCOUNT_ID],
       inlinePolicies: {
         "allow-ddb-access": new iam.PolicyDocument({
           statements: [new iam.PolicyStatement({
@@ -79,11 +78,8 @@ export class SubscriptionService extends cdk.Construct {
       validateRequestBody: true,
     });
 
-    // Create `/subscriptions` Resource
-    const subscriptionResource = this.api.root.addResource("subscriptions");
-
-    // Add AWS Integration
-    subscriptionResource.addMethod("POST", new apigw.AwsIntegration({
+    // Implement `createSubscription` API using AWS Integration
+    this.resource.addMethod("POST", new apigw.AwsIntegration({
       service: "dynamodb",
       integrationHttpMethod: "POST",
       action: "PutItem",
