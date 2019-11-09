@@ -195,21 +195,3 @@ Use API Gateway built-in API Tester. You can inspect full request/response and e
 
 See: https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-test-method.html
 
-
-### Troubleshoot
-
-##### Deploy failure with CloudWatch Logs Role message
-
-![error](./assets/failure.png)
-
-> CloudWatch Logs role ARN must be set in account settings to enable logging.
-
-In this case, You should configure IAM Role for logging.
-
-Follow below two steps in [this document](https://aws.amazon.com/premiumsupport/knowledge-center/api-gateway-cloudwatch-logs/):
-
-- "Create an IAM role for logging to CloudWatch" section
-- "Add the IAM role in the API Gateway console"
-
-> NOTE: "Enable logging for your API and stage" section is not required.
-
